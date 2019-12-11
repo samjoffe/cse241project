@@ -1,0 +1,97 @@
+Sam Joffe
+
+create table vehicle_type (
+   V_ID         NUMERIC(10) PRIMARY KEY,
+    make       VARCHAR(15) NOT NULL,
+    model      VARCHAR(20) NOT NULL,
+    year         NUMERIC(4),
+    type         VARCHAR(12) NOT NULL
+)
+
+create table discount_group (
+    code                       VARCHAR(10) PRIMARY KEY,
+    company_name     VARCHAR(30) NOT NULL,
+    discount_amount  NUMERIC(4, 2) NOT NULL,
+    CHECK(discount_amount > 0)
+)
+
+create table customer (
+    c_id                 NUMERIC(12) PRIMARY KEY,
+    first_name      VARCHAR(20) NOT NULL,
+    last_name       VARCHAR(20) NOT NULL,
+    address_line    VARCHAR(35) NOT NULL,
+    apt_line         VARCHAR(20),
+    city              VARCHAR(30) NOT NULL,
+    state             VARCHAR(2) NOT NULL,
+    zip               numeric(5) NOT NULL,
+    phone_number      numeric(10) NOT NULL,
+    dob               date NOT NULL,
+    license           VARCHAR(15),
+    email             VARCHAR(240) NOT NULL,
+    unique(email)
+)
+
+create table rental_vehicle (
+    rv_id                NUMERIC(10) PRIMARY KEY,
+    v_id                 NUMERIC(10) NOT NULL,
+    odometer_reading    NUMERIC(7) NOT NULL,
+    hourly_rate     NUMERIC(4,2) NOT NULL,
+    daily_rate       NUMERIC(5,2) NOT NULL,
+    foreign key(v_id) references vehicle_type,
+    CHECK(odometer_reading >= 0)
+)
+
+create table customer_discount (
+    c_id      NUMERIC(12) PRIMARY KEY, 
+    code      VARCHAR(10),
+    foreign key (c_id) references customer,
+    foreign key (code) references discount_group
+)
+
+create table location (
+    store_number      NUMERIC(5) PRIMARY KEY,
+    address_line        VARCHAR(35) NOT NULL,
+    apt_line               VARCHAR(20),
+    city                      VARCHAR(30) NOT NULL,
+    state                    VARCHAR(2) NOT NULL,
+    zip                       NUMERIC(5) NOT NULL,
+    phone_number    NUMERIC(10) NOT NULL
+)
+
+create table vehicle_location (
+    rv_id              NUMERIC(10) not null,
+    store_number      NUMERIC(5) not null,
+    primary key(rv_id, store_number),
+    foreign key(rv_id) references rental_vehicle,
+    foreign key(store_number) references location
+)
+
+create table rental (
+    r_id          NUMERIC(12) PRIMARY KEY,
+    c_id         NUMERIC(12) NOT NULL,
+    pickup_loc   NUMERIC(5) NOT NULL,
+    dropoff_loc  NUMERIC(5),
+    rv_id         NUMERIC(10) NOT NULL,
+    start_date   TIMESTAMP,
+    end_date     TIMESTAMP,
+    miles_driven  NUMERIC(5),
+    general_charge  NUMERIC(10,2),
+    fuel_charge  NUMERIC(7,2),
+    insurance_charge  NUMERIC(7,2),
+    per_mile_charge NUMERIC(7,2),
+    dropoff_charge   NUMERIC(5,2),
+    additional_fees    NUMERIC(9,2),
+    discount           NUMERIC(10, 2),
+    foreign key (c_id) references customer,
+    foreign key (pickup_loc) references location,
+    foreign key (dropoff_loc) references location,
+    foreign key (rv_id) references rental_vehicle,
+   check(start_date < end_date),
+   check(general_charge >= 0),
+   check(fuel_charge >= 0),
+   check(insurance_charge >= 0),
+   check(per_mile_charge >= 0),
+   check(dropoff_charge >= 0),
+   check(additional_fees >= 0),
+   check(discount >= 0)
+)
